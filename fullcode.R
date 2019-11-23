@@ -1,8 +1,12 @@
 library(ggplot2)
 library(dbplyr)
+library(dplyr)
 library(gridExtra)
+library(corrplot)
+#install.packages("dummies")
+library(dummies)
 
-my_data <- read.csv("/Users/abhishekbidap/Desktop/my_stuff/Intermediate Analytics/Final Project/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+my_data <- read.csv("/Users/abhishekbidap/Desktop/my_stuff/Intermediate Analytics/Final Project/Project Stuff/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 
 my_missing_NA_value_function <- function(dataset){
   
@@ -24,52 +28,89 @@ my_data_overview <- function(dataset){
   cat('\n\n Names of all the columns in the dataset-\n',Column_Names)
 }
 
-#function calls
+#function calls to understand the overview of the data
 my_missing_NA_value_function(my_data)
 my_data_overview(my_data)
 
+#v2
+#senior citizen is in integer form
+my_data$SeniorCitizen <- as.factor(my_data$SeniorCitizen)
+
+#head(my_data$SeniorCitizen)
+
+#v2
+#checking corelation among the numerical variables (not done)
+
+head(my_data)
+
+#-------------
+#v2
+my_data <- mutate(my_data,tenure_bin=tenure)
+
+max(my_data$tenure_bin)
+my_data$tenure_bin[my_data$tenure_bin >= 0 & my_data$tenure_bin <= 12]   <-  "0 - 1 years"
+my_data$tenure_bin[my_data$tenure_bin >= 13 & my_data$tenure_bin <= 24]  <- "1 - 2 years"
+my_data$tenure_bin[my_data$tenure_bin >= 25 & my_data$tenure_bin <= 36]  <- "2 - 3 years"
+my_data$tenure_bin[my_data$tenure_bin >= 37 & my_data$tenure_bin <= 48]  <- "3 - 4 years"
+my_data$tenure_bin[my_data$tenure_bin >= 49 & my_data$tenure_bin <= 60]  <- "4 - 5 years"
+my_data$tenure_bin[my_data$tenure_bin >= 61 & my_data$tenure_bin <= 72]  <- "5 - 6 years"
+
+
+my_data$tenure_bin = as.factor(my_data$tenure_bin)
+
+head(my_data$tenure_bin)
+
+
+#------------------
+
+#MultipleLines No phone service -> No
+  
+my_data$MultipleLines[which(my_data$MultipleLines=="No phone service")]<-"No"
+
+  
 #count of missing values
 sum(is.na(my_data$TotalCharges))
 
 #missing value deletion
 my_data <- na.omit(my_data)
 
+
+
+
 #Graphical Representation of the Numerical Variables histograms
-ggplot(my_data,aes(x = tenure))+ geom_bar(fill="Blue",width=0.4)
-ggplot(my_data,aes(x = MonthlyCharges))+ geom_bar(fill="Blue",width=0.4)
-ggplot(my_data,aes(x = TotalCharges))+ geom_bar(fill="Blue",width=0.4)
+plot_A <- ggplot(my_data,aes(x = tenure))+ geom_bar(fill="Blue",width=0.4)
+plot_B <- ggplot(my_data,aes(x = MonthlyCharges))+ geom_bar(fill="Blue",width=0.4)
+plot_C <- ggplot(my_data,aes(x = TotalCharges))+ geom_bar(fill="Blue",width=0.4)
 
 summary(my_data$tenure)
 summary(my_data$MonthlyCharges)
 summary(my_data$TotalCharges)
 
 #numerical
-grid.arrange(plot1,plot2,plot3)
+grid.arrange(plot_A,plot_B,plot_C)
 
 #Graphical Representation of the Categorical Variables histograms for each of the columns
-plot4 <- ggplot(data=my_data) + geom_point(mapping = aes(x = PaymentMethod),fill="Blue",width=0.4)
-plot5 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = gender),fill="Blue",width=0.4)
-plot6 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = SeniorCitizen),fill="Blue",width=0.4)
-plot7 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Partner),fill="Blue",width=0.4)
-plot8 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Dependents),fill="Blue",width=0.4)
-plot9 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = PhoneService),fill="Blue",width=0.4)
-plot10 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = MultipleLines),fill="Blue",width=0.4)
-plot11 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = InternetService),fill="Blue",width=0.4)
-plot12 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = OnlineSecurity),fill="Blue",width=0.4)
-plot13 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = OnlineBackup),fill="Blue",width=0.4)
-plot14 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = DeviceProtection),fill="Blue",width=0.4)
-plot15 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = TechSupport),fill="Blue",width=0.4)
-plot16 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = StreamingTV),fill="Blue",width=0.4)
-plot17 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = StreamingMovies),fill="Blue",width=0.4)
-plot18 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Contract),fill="Blue",width=0.4)
-plot19 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = PaperlessBilling),fill="Blue",width=0.4)
-plot20 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Churn),fill="Blue",width=0.4)
+plot4 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = PaymentMethod,y=..prop..,group=2),fill="Blue",stat='count',width=0.4)
+plot5 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = gender,y=..prop..,group=2),fill="Blue",stat='count',width=0.4)
+plot6 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = SeniorCitizen,y=..prop..,group=2),fill="Blue",stat='count',width=0.4)
+plot7 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Partner,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot8 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Dependents,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot9 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = PhoneService,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot10 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = MultipleLines,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot11 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = InternetService,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot12 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = OnlineSecurity,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot13 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = OnlineBackup,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot14 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = DeviceProtection,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot15 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = TechSupport,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot16 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = StreamingTV,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot17 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = StreamingMovies,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot18 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Contract,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot19 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = PaperlessBilling,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
+plot20 <- ggplot(data=my_data) + geom_bar(mapping = aes(x = Churn,y=..prop..,group=2),fill="Blue",width=0.4,stat='count')
 
 #categorical
-grid.arrange(plot5,plot6,plot7,plot8)
-grid.arrange(plot9,plot10,plot11,plot12)
-grid.arrange(plot13,plot14,plot15,plot16)
-grid.arrange(plot17,plot18,plot19,plot20)
+grid.arrange(plot4,plot5,plot6,plot7,plot8,plot9,plot10,plot17,plot18)
+grid.arrange(plot11,plot12,plot13,plot14,plot15,plot16,plot19,plot20)
 
 #Numerical Summaries of Categorical Variables Exploration
 #Gender
@@ -177,11 +218,17 @@ plot_relation_15 =ggplot(my_data, aes(x = PaperlessBilling,fill=Churn)) + geom_b
 plot_relation_16 =ggplot(my_data, aes(x = PaymentMethod,fill=Churn)) + geom_bar(width = 0.4)
 
 
-grid.arrange(plot_relation_1,plot_relation_2,plot_relation_3,plot_relation_4)
-grid.arrange(plot_relation_5,plot_relation_6,plot_relation_7,plot_relation_8)
-grid.arrange(plot_relation_9,plot_relation_10,plot_relation_11,plot_relation_12)
-grid.arrange(plot_relation_13,plot_relation_14,plot_relation_15,plot_relation_16)
-head(my_data)
+grid.arrange(plot_relation_1,plot_relation_2,plot_relation_3,plot_relation_4,plot_relation_5,plot_relation_6,plot_relation_15,plot_relation_16)
+grid.arrange(plot_relation_9,plot_relation_10,plot_relation_11,plot_relation_12,plot_relation_7,plot_relation_8,plot_relation_13,plot_relation_14)
 
 
 
+#creating dummy variables 
+
+my_data_cat <- my_data[,-c(1,3,6,19,20)]
+
+dummy<- data.frame(sapply(my_data_cat,function(x) data.frame(model.matrix(~x-1,data = my_data))[,-1]))
+
+my_new_data_set <- cbind(my_data[,c(1,3,6,19,20)],dummy)
+
+head(my_new_data_set)
