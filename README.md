@@ -1,4 +1,4 @@
-# Telco Customer Churn Prediction
+# Customer Churn Prediction for Telecom
 
 Dataset Source : This dataset is based on IBM based sample dataset obtained from Kaggle for Customer Churn.
 
